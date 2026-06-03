@@ -11,6 +11,7 @@ is_official_build = true
 is_debug = false
 symbol_level = 1
 use_siso = true
+chrome_pgo_phase = 0
 ffmpeg_branding = "Chrome"
 proprietary_codecs = true
 enable_vr = false
