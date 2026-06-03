@@ -1,0 +1,24 @@
+# Lithium Browser — args.gn
+# Chromium 138.0.7204.157 | Android 9+ | arm64-v8a
+
+target_os = "android"
+target_cpu = "arm64"
+android_sdk_release = "u"
+android_default_version_code = "1"
+chrome_public_manifest_package = "com.friczh.lithium"
+min_sdk_version = 28
+is_official_build = true
+is_debug = false
+symbol_level = 1
+use_siso = true
+ffmpeg_branding = "Chrome"
+proprietary_codecs = true
+enable_vr = false
+enable_arcore = false
+enable_openxr = false
+enable_cardboard = false
+enable_remoting = false
+enable_reporting = false
+google_api_key = "AIzaSyDummy00000000000000000000000000000"
+google_default_client_id = "000000000000-dummy.apps.googleusercontent.com"
+google_default_client_secret = "dummySecret"

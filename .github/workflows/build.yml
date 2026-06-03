@@ -1,0 +1,52 @@
+name: Build signed Lithium APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      runner:
+        description: Runner to use
+        default: ubuntu-latest
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ${{ github.event.inputs.runner }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Cache Chromium source
+        uses: actions/cache@v4
+        with:
+          path: |
+            chromium/src
+            depot_tools
+          key: chromium-138.0.7204.157-${{ runner.os }}
+      - name: Setup
+        run: |
+          chmod +x *.sh
+          echo "unix_time=$(date +%s)" >> $GITHUB_ENV
+      - name: Build
+        env:
+          KEYSTORE_JKS: ${{ secrets.KEYSTORE_JKS }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+        run: ./build.sh
+      - name: Upload APKs
+        uses: actions/upload-artifact@v4
+        with:
+          name: lithium-apks-${{ env.unix_time }}
+          path: chromium/src/out/release/*.apk
+      - name: Upload Logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lithium-logs-${{ env.unix_time }}
+          path: logs/*.log
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v138.0.7204.157
+          files: chromium/src/out/release/*.apk
