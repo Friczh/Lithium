@@ -13,6 +13,12 @@ mkdir -p "$LOG_DIR"
 exec > >(tee -a "$LOG_FILE") 2>&1
 echo "=== Job 1: Setup started: $(date) ==="
 
+# Cache check
+if [ -f "$DEPOT_TOOLS/gclient" ] && [ -d "$SRC_DIR/.git" ]; then
+  echo "✅ depot_tools and chromium/src both exist, nothing to do."
+  exit 0
+fi
+
 # Install base deps
 sudo apt-get update -qq
 sudo apt-get install -y lsb-release file git curl python3 python3-pillow
