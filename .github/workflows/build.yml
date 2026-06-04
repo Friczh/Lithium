@@ -57,18 +57,6 @@ jobs:
           path: depot_tools
           key: depot_tools-${{ env.VERSION }}
 
-      - name: Cache Chromium source
-        uses: actions/cache@v4
-        with:
-          path: chromium/src
-          key: chromium-src-${{ env.VERSION }}
-
-      - name: Cache GN output (build.ninja + args)
-        uses: actions/cache@v4
-        with:
-          path: chromium/src/out/Default
-          key: chromium-out-${{ env.VERSION }}-${{ hashFiles('args.gn') }}
-
       - name: Run setup
         run: |
           chmod +x *.sh
@@ -113,12 +101,6 @@ jobs:
         with:
           path: depot_tools
           key: depot_tools-${{ env.VERSION }}
-
-      - name: Restore Chromium source
-        uses: actions/cache@v4
-        with:
-          path: chromium/src
-          key: chromium-src-${{ env.VERSION }}
 
       - name: Restore GN output
         uses: actions/cache@v4
