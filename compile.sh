@@ -13,21 +13,33 @@ mkdir -p "$LOG_DIR"
 exec > >(tee -a "$LOG_FILE") 2>&1
 echo "=== Job 2: Compile started: $(date) ==="
 
+# Install base deps
+sudo apt-get update -qq
+sudo apt-get install -y lsb-release file git curl python3 python3-pillow
+
+# depot_tools — restored from cache by workflow, but clone if missing
+if [ ! -f "$DEPOT_TOOLS/gclient" ]; then
+  echo "⚠️ depot_tools missing, cloning..."
+  git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git "$DEPOT_TOOLS"
+else
+  echo "✅ depot_tools found"
+fi
 export PATH="$DEPOT_TOOLS:$PATH"
 
-if [ ! -d "$SRC_DIR/.git" ]; then
-  echo "⚠️  Cache miss detected: chromium/src not found"
-  echo "Running gclient sync locally (incremental)..."
-  
-  mkdir -p "$SRC_DIR"
-  cd "$SRC_DIR"
-  git init
-  git remote add origin https://chromium.googlesource.com/chromium/src.git
-  git fetch --depth 2 origin "+refs/tags/$VERSION:refs/tags/$VERSION"
-  git checkout "$VERSION"
-  
-  COMMIT=$(cd "$SRC_DIR" && git rev-parse HEAD)
-  cat > "$CHROMIUM_DIR/.gclient" <<GCLIENT
+# Chromium src — always fetch fresh (not cached anymore)
+echo "Fetching Chromium $VERSION..."
+mkdir -p "$SRC_DIR"
+cd "$SRC_DIR"
+git init
+git remote add origin https://chromium.googlesource.com/chromium/src.git 2>/dev/null || true
+git fetch --depth 2 origin "+refs/tags/$VERSION:refs/tags/$VERSION"
+git checkout "$VERSION"
+
+COMMIT=$(git rev-parse HEAD)
+echo "Commit: $COMMIT"
+
+# Write .gclient
+cat > "$CHROMIUM_DIR/.gclient" <<GCLIENT
 solutions = [
   {
     "name": "src",
@@ -40,39 +52,36 @@ solutions = [
 target_os = ["android"]
 GCLIENT
 
-  cd "$CHROMIUM_DIR"
-  gclient sync -D --no-history --nohooks
-  gclient runhooks
-  rm -rf third_party/angle/third_party/VK-GL-CTS/
-  
-  echo "Cache miss recovery complete ✅"
-else
-  echo "✅ Cache hit: chromium/src found, skipping sync"
-fi
+cd "$CHROMIUM_DIR"
+gclient sync -D --no-history --nohooks
+gclient runhooks
+rm -rf "$SRC_DIR/third_party/angle/third_party/VK-GL-CTS/"
 
+# Install Chromium build deps (clang, lld etc.) — fresh runner every time
 cd "$SRC_DIR"
-
-echo "Installing Chromium build deps on fresh runner..."
-sudo apt-get update -qq
-sudo apt-get install -y lsb-release file git curl python3 python3-pillow
 ./build/install-build-deps.sh --no-prompt
 
-# Configure sccache
+# GN gen
+mkdir -p out/Default
+cp "$SCRIPT_DIR/args.gn" out/Default/args.gn
+
+# Inject sccache if available
 if command -v sccache &>/dev/null; then
   echo "sccache detected, enabling..."
   export SCCACHE_DIR="${SCCACHE_DIR:-$HOME/.cache/sccache}"
-  # Inject cc_wrapper into args.gn if not already there
-  if ! grep -q "cc_wrapper" "$SRC_DIR/out/Default/args.gn"; then
-    echo 'cc_wrapper="sccache"' >> "$SRC_DIR/out/Default/args.gn"
-    echo "Added cc_wrapper=sccache to args.gn, regenerating..."
-    gn gen out/Default
+  if ! grep -q "cc_wrapper" out/Default/args.gn; then
+    echo 'cc_wrapper="sccache"' >> out/Default/args.gn
+    echo "Added cc_wrapper=sccache to args.gn"
   fi
 else
   echo "sccache not found, building without cache wrapper."
 fi
 
-echo "Building with siso..."
-cd "$SRC_DIR"
+gn gen out/Default
+echo "gn gen done."
+
+# Compile
+echo "Building with autoninja + siso..."
 autoninja -C out/Default chrome_public_apk
 
 mkdir -p out/tmp out/release
