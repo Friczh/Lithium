@@ -73,7 +73,7 @@ fi
 
 echo "Building with siso..."
 cd "$SRC_DIR"
-third_party/siso/siso ninja -C out/Default chrome_public_apk
+autoninja -C out/Default chrome_public_apk
 
 mkdir -p out/tmp out/release
 mv out/Default/apks/ChromePublic.apk "out/tmp/$VERSION-arm64-v8a.apk"
