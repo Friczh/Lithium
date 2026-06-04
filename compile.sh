@@ -17,7 +17,7 @@ echo "=== Job 2: Compile started: $(date) ==="
 sudo apt-get update -qq
 sudo apt-get install -y lsb-release file git curl python3 python3-pillow
 
-# depot_tools — restored from cache by workflow, but clone if missing
+# depot_tools - self-heal 
 if [ ! -f "$DEPOT_TOOLS/gclient" ]; then
   echo "⚠️ depot_tools missing, cloning..."
   git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git "$DEPOT_TOOLS"
@@ -26,16 +26,21 @@ else
 fi
 export PATH="$DEPOT_TOOLS:$PATH"
 
-# Chromium src — always fetch fresh (not cached anymore)
-echo "Fetching Chromium $VERSION..."
-mkdir -p "$SRC_DIR"
-cd "$SRC_DIR"
-git init
-git remote add origin https://chromium.googlesource.com/chromium/src.git 2>/dev/null || true
-git fetch --depth 2 origin "+refs/tags/$VERSION:refs/tags/$VERSION"
-git checkout "$VERSION"
 
-COMMIT=$(git rev-parse HEAD)
+# Chromium self-heal 
+if [ -d "$SRC_DIR/.git" ]; then
+  echo "✅ chromium/src cache hit, skipping fetch"
+else
+  echo "⚠️ chromium/src missing, fetching fresh..."
+  mkdir -p "$SRC_DIR"
+  cd "$SRC_DIR"
+  git init
+  git remote add origin https://chromium.googlesource.com/chromium/src.git 2>/dev/null || true
+  git fetch --depth 2 origin "+refs/tags/$VERSION:refs/tags/$VERSION"
+  git checkout "$VERSION"
+fi
+
+COMMIT=$(cd "$SRC_DIR" && git rev-parse HEAD)
 echo "Commit: $COMMIT"
 
 # Write .gclient
