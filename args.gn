@@ -35,6 +35,7 @@ enable_cardboard = false
 enable_remoting = false
 enable_base_tracing = false
 use_thin_lto = false
+use_xnnpack = false
 enable_precompiled_headers = true
 android_channel = "stable"
 enable_automatic_password_saving = false
