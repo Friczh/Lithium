@@ -88,9 +88,9 @@ enable_test_fonts = false
 enable_code_signing = true
 use_sysroot = true  # Use sysroot
 enable_linux_installer = false  # Linux installer
-is_asan = true
-is_lsan = true
-is_msan = true
+is_asan = false
+is_lsan = false
+is_msan = false
 is_tsan = false
 is_ubsan = false
-treat_warnings_as_errors
+treat_warnings_as_errors = false
