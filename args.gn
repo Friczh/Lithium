@@ -33,6 +33,7 @@ enable_arcore = false
 enable_openxr = false
 enable_cardboard = false
 enable_remoting = false
+enable_base_tracing = false
 use_thin_lto = false
 enable_precompiled_headers = true
 android_channel = "stable"
