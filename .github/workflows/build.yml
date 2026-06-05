@@ -17,7 +17,7 @@ jobs:
 
   # Job 0: Dummy entry point 
   start:
-    name: "Start"
+    name: "post_check"
     runs-on: ubuntu-latest
     steps:
       - name: Report
@@ -29,7 +29,7 @@ jobs:
           fi
   # Job 1: Sync & Generate
   setup:
-    name: "Sync & GN Gen"
+    name: "syncing_and_gn_gen"
     runs-on: ubuntu-latest
     needs: start
     if: inputs.skip_setup != true
@@ -85,12 +85,10 @@ jobs:
 
   #  Job 2: Compile 
   compile:
-    name: "Compile"
+    name: "compiling"
     runs-on: ubuntu-latest
     needs: [start, setup]
-    if: needs.start.result == 'success' && needs.setup.result != 'failure'
-
-    steps:
+    if: needs.start.result == 'success' && (needs.setup.result == 'success' || needs.setup.result == 'skipped')
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -171,7 +169,7 @@ jobs:
 
   # Sign & Release 
   sign:
-    name: "Job 3 — Sign & Release"
+    name: "signing_and_release"
     runs-on: ubuntu-latest
     needs: compile
 
