@@ -36,7 +36,7 @@ else
   cd "$SRC_DIR"
   git init
   git remote add origin https://chromium.googlesource.com/chromium/src.git 2>/dev/null || true
-  git fetch --depth 2 origin "+refs/tags/$VERSION:refs/tags/$VERSION"
+  git fetch --depth 1 origin "+refs/tags/$VERSION:refs/tags/$VERSION"
   git checkout "$VERSION"
 fi
 
