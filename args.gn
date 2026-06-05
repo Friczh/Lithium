@@ -36,6 +36,7 @@ enable_remoting = false
 enable_base_tracing = false
 use_thin_lto = false
 use_xnnpack = false
+clang_use_chrome_plugins = false
 enable_precompiled_headers = true
 android_channel = "stable"
 enable_automatic_password_saving = false
