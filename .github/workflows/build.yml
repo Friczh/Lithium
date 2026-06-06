@@ -141,9 +141,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/sccache
-          key: sccache-${{ env.VERSION }}-${{ github.run_number }}
-          restore-keys: |
-            sccache-${{ env.VERSION }}-
+          key: sccache-${{ env.VERSION }}
 
       - name: Install sccache
         run: |
