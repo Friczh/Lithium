@@ -156,6 +156,13 @@ jobs:
           chmod +x *.sh
           ./compile.sh
 
+      - name: Save sccache
+        uses: actions/cache/save@v4
+        if: always()
+        with:
+          path: ~/.cache/sccache
+          key: sccache-${{ env.VERSION }}
+
       - name: sccache stats
         if: always()
         run: sccache --show-stats
