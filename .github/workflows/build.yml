@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       skip_setup:
-        description: Force use Cache?
+        description: Skip setup?
         type: boolean
         default: false
 permissions:
@@ -23,9 +23,7 @@ jobs:
       - name: Report
         run: |
           if [ "${{ inputs.skip_setup }}" == "true" ]; then
-            echo "skip_setup=true — Job 1 will be skipped, using GitHub cache"
-          else
-            echo "skip_setup=false — Job 1 will run full setup"
+            echo "skip_setup=true —  ⚠️Setup skipped - using cached depot_tools"
           fi
   # Job 1: Sync & Generate
   setup:
@@ -66,12 +64,6 @@ jobs:
           path: depot_tools
           key: depot_tools-${{ env.VERSION }}
 
-      - name: Cache GN output
-        uses: actions/cache@v4
-        with:
-          path: chromium/src/out/Default
-          key: chromium-out-${{ env.VERSION }}-${{ hashFiles('args.gn') }}
-
       - name: Run setup
         run: |
           chmod +x *.sh
@@ -93,7 +85,7 @@ jobs:
           echo "=== Disk before cleanup ==="
           df -h /
           # Safe to remove — no impact on Chromium build tools
-          # NOTE: We keep /usr/local/lib/android (Android SDK) and all llvm/clang
+          # NOTE: We keep /usr/local/lib/android
           sudo rm -rf /usr/share/dotnet
           sudo rm -rf /opt/ghc
           sudo rm -rf /usr/local/.ghcup
