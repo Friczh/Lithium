@@ -113,7 +113,13 @@ jobs:
       - name: Restore siso cache
         uses: actions/cache@v4
         with:
-         path: ~/.cache/siso
+         path: |
+            src/out/Default/.siso_deps
+            src/out/Default/.siso_state
+            src/out/Default/.ninja_log
+            src/out/Default/obj
+            src/out/Default/gen
+            src/out/Default/*.ninja
          key: siso-${{ env.VERSION }}-${{ github.run_number }}
          restore-keys: |
           siso-${{ env.VERSION }}-
@@ -127,7 +133,13 @@ jobs:
         uses: actions/cache/save@v4
         if: always()
         with:
-         path: ~/.cache/siso
+         path: |
+            src/out/Default/.siso_deps
+            src/out/Default/.siso_state
+            src/out/Default/.ninja_log
+            src/out/Default/obj
+            src/out/Default/gen
+            src/out/Default/*.ninja
          key: siso-${{ env.VERSION }}-${{ github.run_number }}
 
       - name: Upload APK artifact
