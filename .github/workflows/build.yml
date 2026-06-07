@@ -118,35 +118,25 @@ jobs:
           path: depot_tools
           key: depot_tools-${{ env.VERSION }}
 
-      - name: Restore sccache
+      - name: Restore siso cache
         uses: actions/cache@v4
         with:
-          path: ~/.cache/sccache
-          key: sccache-${{ env.VERSION }}
-
-      - name: Install sccache
-        run: |
-          curl -sSL https://github.com/mozilla/sccache/releases/download/v0.7.7/sccache-v0.7.7-x86_64-unknown-linux-musl.tar.gz \
-            | tar -xz --strip-components=1 -C /usr/local/bin sccache-v0.7.7-x86_64-unknown-linux-musl/sccache
-          chmod +x /usr/local/bin/sccache
-          sccache --start-server
-          echo "SCCACHE_DIR=$HOME/.cache/sccache" >> $GITHUB_ENV
+         path: ~/.cache/siso
+         key: siso-${{ env.VERSION }}-${{ github.run_number }}
+         restore-keys: |
+          siso-${{ env.VERSION }}-
 
       - name: Run compile
         run: |
           chmod +x *.sh
           ./compile.sh
 
-      - name: Save sccache
+      - name: Save siso cache
         uses: actions/cache/save@v4
         if: always()
         with:
-          path: ~/.cache/sccache
-          key: sccache-${{ env.VERSION }}
-
-      - name: sccache stats
-        if: always()
-        run: sccache --show-stats
+         path: ~/.cache/siso
+         key: siso-${{ env.VERSION }}-${{ github.run_number }}
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
