@@ -66,18 +66,20 @@ rm -rf "$SRC_DIR/third_party/angle/third_party/VK-GL-CTS/"
 cd "$SRC_DIR"
 ./build/install-build-deps.sh --no-prompt
 
+# Set up env var for sccache
+export SCCACHE_DIR="$HOME/.cache/sccache"
+export SCCACHE_CACHE_SIZE="10G"
+export CC="sccache clang"
+export CXX="sccache clang++"
+export AR="sccache ar"
+
 # GN gen
 mkdir -p out/Default
 cp "$SCRIPT_DIR/args.gn" out/Default/args.gn
 
 if command -v sccache &>/dev/null; then
   echo "sccache detected, enabling..."
-  export SCCACHE_DIR="$HOME/.cache/sccache"
-  export SCCACHE_CACHE_SIZE="10G"
   sccache --start-server 2>/dev/null || true
-  export CC="sccache clang"
-  export CXX="sccache clang++"
-  export AR="sccache ar"
 else
   echo "sccache not found, building without cache wrapper."
 fi
