@@ -88,7 +88,7 @@ jobs:
         run: |
           cd chromium/src
           mkdir -p out/Default
-          cp args.gn out/Default/args.gn
+          cp $GITHUB_WORKSPACE/args.gn out/Default/args.gn
           gn gen out/Default
           gn args --list out/Default > gn_args_full.txt 2>&1
           echo "Done! Total args:"
