@@ -155,6 +155,17 @@ jobs:
           path: chromium/src/out/tmp/*.apk
           retention-days: 1
 
+      - name: Upload siso logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+         name: siso-logs
+         path: |
+          chromium/src/out/Default/siso_output
+          chromium/src/out/Default/siso.INFO
+          chromium/src/out/Default/siso_failed_commands.sh
+         retention-days: 1
+
   # Sign & Release 
   sign:
     name: "signing_and_release"
