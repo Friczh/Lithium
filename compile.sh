@@ -70,14 +70,14 @@ cd "$SRC_DIR"
 mkdir -p out/Default
 cp "$SCRIPT_DIR/args.gn" out/Default/args.gn
 
-# Inject sccache if available
 if command -v sccache &>/dev/null; then
   echo "sccache detected, enabling..."
-  export SCCACHE_DIR="${SCCACHE_DIR:-$HOME/.cache/sccache}"
-  if ! grep -q "cc_wrapper" out/Default/args.gn; then
-    echo 'cc_wrapper="sccache"' >> out/Default/args.gn
-    echo "Added cc_wrapper=sccache to args.gn"
-  fi
+  export SCCACHE_DIR="$HOME/.cache/sccache"
+  export SCCACHE_CACHE_SIZE="10G"
+  sccache --start-server 2>/dev/null || true
+  export CC="sccache clang"
+  export CXX="sccache clang++"
+  export AR="sccache ar"
 else
   echo "sccache not found, building without cache wrapper."
 fi
