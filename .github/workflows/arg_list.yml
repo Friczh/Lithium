@@ -1,0 +1,102 @@
+name: Dump GN Args List
+
+on:
+  workflow_dispatch:
+
+env:
+  VERSION: "138.0.7204.157"
+
+jobs:
+  dump_args:
+    name: "Dump GN Args"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/.ghcup
+          sudo rm -rf /usr/share/swift
+          sudo rm -rf /usr/local/share/powershell
+          sudo rm -rf /usr/share/miniconda
+          sudo rm -rf /usr/local/aws-cli
+          sudo rm -rf /usr/local/aws-sam-cli
+          sudo rm -rf /usr/local/lib/node_modules
+          sudo rm -rf /usr/local/share/chromium
+          sudo rm -rf /usr/share/gradle-*
+          sudo rm -rf /usr/share/java
+          sudo docker image prune --all --force || true
+          sudo swapoff -a && sudo rm -f /mnt/swapfile || true
+          sudo apt-get clean || true
+
+      - name: Restore depot_tools
+        uses: actions/cache@v4
+        with:
+          path: depot_tools
+          key: depot_tools-${{ env.VERSION }}
+
+      - name: Install base deps
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y lsb-release file git curl python3 python3-pillow
+
+      - name: Setup depot_tools
+        run: |
+          if [ ! -f "depot_tools/gclient" ]; then
+            git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git depot_tools
+          fi
+          echo "$PWD/depot_tools" >> $GITHUB_PATH
+
+      - name: Fetch Chromium source
+        run: |
+          mkdir -p chromium/src
+          cd chromium/src
+          git init
+          git remote add origin https://chromium.googlesource.com/chromium/src.git 2>/dev/null || true
+          git fetch --depth 1 origin "+refs/tags/${{ env.VERSION }}:refs/tags/${{ env.VERSION }}"
+          git checkout ${{ env.VERSION }}
+
+      - name: gclient sync
+        run: |
+          COMMIT=$(cd chromium/src && git rev-parse HEAD)
+          cat > chromium/.gclient <<GCLIENT
+          solutions = [
+            {
+              "name": "src",
+              "url": "https://chromium.googlesource.com/chromium/src.git@$COMMIT",
+              "managed": False,
+              "custom_deps": {},
+              "custom_vars": {},
+            },
+          ]
+          target_os = ["android"]
+          GCLIENT
+          cd chromium
+          gclient sync -D --no-history --nohooks
+          gclient runhooks
+
+      - name: Install build deps
+        run: |
+          cd chromium/src
+          ./build/install-build-deps.sh --no-prompt
+
+      - name: GN gen + dump args
+        run: |
+          cd chromium/src
+          mkdir -p out/Default
+          cp args.gn out/Default/args.gn
+          gn gen out/Default
+          gn args --list out/Default > gn_args_full.txt 2>&1
+          echo "Done! Total args:"
+          wc -l gn_args_full.txt
+
+      - name: Upload args list
+        uses: actions/upload-artifact@v4
+        with:
+          name: gn-args-list
+          path: chromium/src/gn_args_full.txt
+          retention-days: 7
