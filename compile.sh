@@ -27,18 +27,13 @@ fi
 export PATH="$DEPOT_TOOLS:$PATH"
 
 
-# Chromium self-heal 
-if [ -d "$SRC_DIR/.git" ]; then
-  echo "✅ chromium/src cache hit, skipping fetch"
-else
-  echo "⚠️ chromium/src missing, fetching fresh..."
-  mkdir -p "$SRC_DIR"
-  cd "$SRC_DIR"
-  git init
-  git remote add origin https://chromium.googlesource.com/chromium/src.git 2>/dev/null || true
-  git fetch --depth 1 origin "+refs/tags/$VERSION:refs/tags/$VERSION"
-  git checkout "$VERSION"
-fi
+# Chromium source fetch 
+mkdir -p "$SRC_DIR"
+cd "$SRC_DIR"
+git init
+git remote add origin https://chromium.googlesource.com/chromium/src.git 2>/dev/null || true
+git fetch --depth 1 origin "+refs/tags/$VERSION:refs/tags/$VERSION"
+git checkout "$VERSION"
 
 COMMIT=$(cd "$SRC_DIR" && git rev-parse HEAD)
 echo "Commit: $COMMIT"
