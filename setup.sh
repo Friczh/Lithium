@@ -6,6 +6,7 @@ LOG_DIR="$SCRIPT_DIR/logs"
 LOG_FILE="$LOG_DIR/setup-$(date +%Y%m%d-%H%M%S).log"
 VERSION="138.0.7204.157"
 DEPOT_TOOLS="$SCRIPT_DIR/depot_tools"
+GCLIENT_VERSION=""
 
 mkdir -p "$LOG_DIR"
 exec > >(tee -a "$LOG_FILE") 2>&1
@@ -76,7 +77,7 @@ while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
   fi
 
   # Success!
-  GCLIENT_VERSION=$("$DEPOT_TOOLS/gclient" --version 2>&1 | head -1)
+  GCLIENT_VERSION=$("$DEPOT_TOOLS/gclient" --version 2>&1 | head -1) || true
   echo ""
   echo "✅ SUCCESS: depot_tools fetched and verified!"
   echo "   Location: $DEPOT_TOOLS"
