@@ -6,7 +6,8 @@ LOG_DIR="$SCRIPT_DIR/logs"
 LOG_FILE="$LOG_DIR/setup-$(date +%Y%m%d-%H%M%S).log"
 VERSION="138.0.7204.157"
 DEPOT_TOOLS="$SCRIPT_DIR/depot_tools"
-
+RETRY_COUNT=0
+MAX_RETRIES=3
 mkdir -p "$LOG_DIR"
 exec > >(tee -a "$LOG_FILE") 2>&1
 echo "=== Job 1: Setup started: $(date) ==="
