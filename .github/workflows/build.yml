@@ -68,6 +68,13 @@ jobs:
         run: |
           chmod +x *.sh
           ./setup.sh
+          
+      - name: Save depot_tools cache
+        uses: actions/cache/save@v4
+        if: always()
+        with:
+          path: depot_tools
+          key: depot_tools-${{ env.VERSION }}
 
   #  Job 2: Compile 
   compile:
