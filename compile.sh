@@ -15,7 +15,7 @@ echo "=== Job 2: Compile started: $(date) ==="
 
 # Install base deps
 sudo apt-get update -qq
-sudo apt-get install -y lsb-release file git curl python3 python3-pillow
+sudo apt-get install -qq lsb-release file git curl python3 python3-pillow
 
 # depot_tools - self-heal 
 if [ ! -f "$DEPOT_TOOLS/gclient" ]; then
