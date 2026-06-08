@@ -28,9 +28,15 @@ ffmpeg_branding = "Chrome"
 proprietary_codecs = true
 android_channel = "stable"
 
+
+enable_extensions = true
+enable_dav1d_decoder = true
+enable_av1_decoder = true
+enable_mse_mpeg2ts_stream_parser = true
+enable_android_secondary_abi = false
+
 enable_nacl = false
 enable_plugins = false
-enable_ppapi = false
 enable_pdf = false
 enable_print_preview = false
 enable_printing = false
@@ -41,12 +47,13 @@ enable_openxr = false
 enable_cardboard = false
 enable_remoting = false
 enable_base_tracing = false
+enable_nocompile_tests = false
+enable_resource_allowlist_generation = false
+enable_media_remoting = false
 enable_ipc_fuzzer = false
 enable_mdns = false
 enable_paint_preview = false
 enable_offline_pages = false
-enable_websockets = true
-enable_widevine = true
 enable_mse_mpeg2ts_stream_parser = true
 enable_service_discovery = false
 enable_on_device_translation = false
