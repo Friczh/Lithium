@@ -28,9 +28,6 @@ ffmpeg_branding = "Chrome"
 proprietary_codecs = true
 android_channel = "stable"
 
-
-enable_extensions = true
-enable_dav1d_decoder = true
 enable_av1_decoder = true
 enable_mse_mpeg2ts_stream_parser = true
 enable_android_secondary_abi = false
