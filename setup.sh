@@ -6,84 +6,82 @@ LOG_DIR="$SCRIPT_DIR/logs"
 LOG_FILE="$LOG_DIR/setup-$(date +%Y%m%d-%H%M%S).log"
 VERSION="138.0.7204.157"
 DEPOT_TOOLS="$SCRIPT_DIR/depot_tools"
-CHROMIUM_DIR="$SCRIPT_DIR/chromium"
-SRC_DIR="$CHROMIUM_DIR/src"
 
 mkdir -p "$LOG_DIR"
 exec > >(tee -a "$LOG_FILE") 2>&1
 echo "=== Job 1: Setup started: $(date) ==="
 
-# Cache check
-if [ -f "$DEPOT_TOOLS/gclient" ] && [ -d "$SRC_DIR/.git" ]; then
-  echo "✅ depot_tools and chromium/src both exist, nothing to do."
+echo "=== depot_tools Fetch Script ==="
+
+while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+  RETRY_COUNT=$((RETRY_COUNT + 1))
+  echo ""
+  echo "Attempt $RETRY_COUNT of $MAX_RETRIES..."
+
+  # Remove depot_tools if it exists and is incomplete
+  if [ -d "$DEPOT_TOOLS" ]; then
+    if [ ! -f "$DEPOT_TOOLS/gclient" ]; then
+      echo "⚠️  depot_tools directory exists but gclient missing, removing..."
+      rm -rf "$DEPOT_TOOLS"
+    fi
+  fi
+
+  # Clone depot_tools if it doesn't exist
+  if [ ! -d "$DEPOT_TOOLS" ]; then
+    echo "Cloning depot_tools..."
+    if ! git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git "$DEPOT_TOOLS"; then
+      echo "❌ FAILED: Failed to clone depot_tools on attempt $RETRY_COUNT"
+      if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+        echo "   Retrying..."
+        continue
+      else
+        echo "❌ ERROR: Failed to fetch depot_tools after $MAX_RETRIES attempts"
+        exit 1
+      fi
+    fi
+  fi
+
+  # Verify depot_tools was cloned successfully
+  if [ ! -f "$DEPOT_TOOLS/gclient" ]; then
+    echo "❌ FAILED: gclient not found after clone on attempt $RETRY_COUNT"
+    rm -rf "$DEPOT_TOOLS"
+    if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+      echo "   Retrying..."
+      continue
+    else
+      echo "❌ ERROR: Failed to verify depot_tools after $MAX_RETRIES attempts"
+      exit 1
+    fi
+  fi
+
+  # Check if gclient is executable
+  if [ ! -x "$DEPOT_TOOLS/gclient" ]; then
+    echo "⚠️  Making gclient executable..."
+    chmod +x "$DEPOT_TOOLS/gclient"
+  fi
+
+  # Test gclient
+  if ! "$DEPOT_TOOLS/gclient" --version > /dev/null 2>&1; then
+    echo "❌ FAILED: gclient --version failed on attempt $RETRY_COUNT"
+    rm -rf "$DEPOT_TOOLS"
+    if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+      echo "   Retrying..."
+      continue
+    else
+      echo "❌ ERROR: Failed to validate gclient after $MAX_RETRIES attempts"
+      exit 1
+    fi
+  fi
+
+  # Success!
+  GCLIENT_VERSION=$("$DEPOT_TOOLS/gclient" --version 2>&1 | head -1)
+  echo ""
+  echo "✅ SUCCESS: depot_tools fetched and verified!"
+  echo "   Location: $DEPOT_TOOLS"
+  echo "   Version: $GCLIENT_VERSION"
+  echo ""
   exit 0
-fi
+done
 
-# Install base deps
-sudo apt-get update -qq
-sudo apt-get install -y lsb-release file git curl python3 python3-pillow
-
-# depot_tools — skip if cached
-if [ ! -f "$DEPOT_TOOLS/gclient" ]; then
-  echo "Cloning depot_tools..."
-  git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git "$DEPOT_TOOLS"
-else
-  echo "depot_tools cache hit, skipping clone."
-fi
-export PATH="$DEPOT_TOOLS:$PATH"
-
-# Chromium src — skip fetch if cached
-mkdir -p "$SRC_DIR"
-
-if [ ! -d "$SRC_DIR/.git" ]; then
-  echo "Fetching Chromium $VERSION..."
-  cd "$SRC_DIR"
-  git init
-  git remote add origin https://chromium.googlesource.com/chromium/src.git
-  git fetch --depth 2 origin "+refs/tags/$VERSION:refs/tags/$VERSION"
-  git checkout "$VERSION"
-else
-  echo "Chromium src cache hit, skipping fetch."
-fi
-
-COMMIT=$(cd "$SRC_DIR" && git rev-parse HEAD)
-echo "Commit: $COMMIT"
-
-# Write .gclient into chromium/ (parent of src/)
-cat > "$CHROMIUM_DIR/.gclient" <<GCLIENT
-solutions = [
-  {
-    "name": "src",
-    "url": "https://chromium.googlesource.com/chromium/src.git@$COMMIT",
-    "managed": False,
-    "custom_deps": {},
-    "custom_vars": {},
-  },
-]
-target_os = ["android"]
-GCLIENT
-
-cd "$CHROMIUM_DIR"
-gclient root
-
-# gclient sync — skip if build.ninja already exists (full cache hit)
-if [ ! -f "$SRC_DIR/out/Default/build.ninja" ]; then
-  echo "Running gclient sync..."
-  cd "$SRC_DIR"
-  gclient sync -D --no-history --nohooks
-  gclient runhooks
-  rm -rf third_party/angle/third_party/VK-GL-CTS/
-
-  # Install Chromium build deps (clang, lld, etc.)
-  ./build/install-build-deps.sh --no-prompt
-
-  mkdir -p out/Default
-  cp "$SCRIPT_DIR/args.gn" out/Default/args.gn
-  gn gen out/Default
-  echo "gn gen done."
-else
-  echo "build.ninja cache hit, skipping sync + gn gen."
-  cp "$SCRIPT_DIR/args.gn" "$SRC_DIR/out/Default/args.gn"
-fi
-
-echo "=== Job 1: Setup finished: $(date) ==="
+echo "❌ ERROR: depot_tools fetch failed after $MAX_RETRIES attempts"
+exit 1
