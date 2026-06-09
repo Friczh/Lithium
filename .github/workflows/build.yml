@@ -121,12 +121,12 @@ jobs:
         uses: actions/cache@v4
         with:
          path: |
-            src/out/Default/.siso_deps
-            src/out/Default/.siso_state
-            src/out/Default/.ninja_log
-            src/out/Default/obj
-            src/out/Default/gen
-            src/out/Default/*.ninja
+            chromium/src/out/Default/.siso_deps
+            chromium/src/out/Default/.siso_state
+            chromium/src/out/Default/.ninja_log
+            chromium/src/out/Default/obj
+            chromium/src/out/Default/gen
+            chromium/src/out/Default/*.ninja
          key: siso-${{ env.VERSION }}-${{ github.run_number }}
          restore-keys: |
           siso-${{ env.VERSION }}-
@@ -141,12 +141,12 @@ jobs:
         if: always()
         with:
          path: |
-            src/out/Default/.siso_deps
-            src/out/Default/.siso_state
-            src/out/Default/.ninja_log
-            src/out/Default/obj
-            src/out/Default/gen
-            src/out/Default/*.ninja
+            chromium/src/out/Default/.siso_deps
+            chromium/src/out/Default/.siso_state
+            chromium/src/out/Default/.ninja_log
+            chromium/src/out/Default/obj
+            chromium/src/out/Default/gen
+            chromium/src/out/Default/*.ninja
          key: siso-${{ env.VERSION }}-${{ github.run_number }}
 
       - name: Upload APK artifact
