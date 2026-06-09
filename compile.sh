@@ -8,12 +8,9 @@ VERSION="138.0.7204.157"
 DEPOT_TOOLS="$SCRIPT_DIR/depot_tools"
 CHROMIUM_DIR="$SCRIPT_DIR/chromium"
 SRC_DIR="$CHROMIUM_DIR/src"
-export GIT_CONFIG_COUNT=2
-export GIT_CONFIG_KEY_0="advice.defaultBranchName"
-export GIT_CONFIG_VALUE_0="false"
-export GIT_CONFIG_KEY_1="init.defaultBranch"
-export GIT_CONFIG_VALUE_1="main"
 
+git config --global init.defaultBranch main
+git config --global advice.detachedHead false
 mkdir -p "$LOG_DIR"
 exec > >(tee -a "$LOG_FILE") 2>&1
 echo "=== Job 2: Compile started: $(date) ==="
@@ -36,12 +33,10 @@ export DEPOT_TOOLS_METRICS=0
 # Chromium source fetch 
 mkdir -p "$SRC_DIR"
 cd "$SRC_DIR"
-git init
-git config --global init.defaultBranch main
-git config --global advice.detachedHead false
+git -c init.defaultBranch=main init
 git remote add origin https://chromium.googlesource.com/chromium/src.git 2>/dev/null || true
 git fetch --depth 1 origin "+refs/tags/$VERSION:refs/tags/$VERSION"
-git checkout "$VERSION"
+git -c advice.detachedHead=false checkout "$VERSION"
 
 COMMIT=$(cd "$SRC_DIR" && git rev-parse HEAD)
 echo "Commit: $COMMIT"
