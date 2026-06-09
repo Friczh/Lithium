@@ -8,6 +8,11 @@ VERSION="138.0.7204.157"
 DEPOT_TOOLS="$SCRIPT_DIR/depot_tools"
 CHROMIUM_DIR="$SCRIPT_DIR/chromium"
 SRC_DIR="$CHROMIUM_DIR/src"
+export GIT_CONFIG_COUNT=2
+export GIT_CONFIG_KEY_0="advice.defaultBranchName"
+export GIT_CONFIG_VALUE_0="false"
+export GIT_CONFIG_KEY_1="init.defaultBranch"
+export GIT_CONFIG_VALUE_1="main"
 
 mkdir -p "$LOG_DIR"
 exec > >(tee -a "$LOG_FILE") 2>&1
