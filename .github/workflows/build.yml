@@ -30,7 +30,7 @@ jobs:
     name: "syncing_and_gn_gen"
     runs-on: ubuntu-latest
     needs: start
-    if: inputs.skip_setup != true
+    if: ${{ inputs.skip_setup != true }}
 
     steps:
       - name: Checkout
