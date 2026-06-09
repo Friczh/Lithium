@@ -25,12 +25,15 @@ else
   echo "✅ depot_tools found"
 fi
 export PATH="$DEPOT_TOOLS:$PATH"
+export DEPOT_TOOLS_METRICS=0
 
 
 # Chromium source fetch 
 mkdir -p "$SRC_DIR"
 cd "$SRC_DIR"
 git init
+git config --global init.defaultBranch main
+git config --global advice.detachedHead false
 git remote add origin https://chromium.googlesource.com/chromium/src.git 2>/dev/null || true
 git fetch --depth 1 origin "+refs/tags/$VERSION:refs/tags/$VERSION"
 git checkout "$VERSION"
