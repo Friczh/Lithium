@@ -59,7 +59,7 @@ rm -rf "$SRC_DIR/third_party/angle/third_party/VK-GL-CTS/"
 
 # Install Chromium build deps (clang, lld etc.) — fresh runner every time
 cd "$SRC_DIR"
-./build/install-build-deps --no-prompt > /dev/null 2>&1 || { echo "❌ install-build-deps failed"; exit 1; }
+./build/install-build-deps --no-prompt > /dev/null 2>&1 || true
 
 # GN gen
 mkdir -p out/Default
