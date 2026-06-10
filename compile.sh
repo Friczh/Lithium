@@ -37,6 +37,8 @@ git -c init.defaultBranch=main init
 git remote add origin https://chromium.googlesource.com/chromium/src.git 2>/dev/null || true
 git fetch --depth 1 origin "+refs/tags/$VERSION:refs/tags/$VERSION"
 git -c advice.detachedHead=false checkout "$VERSION"
+sudo apt-get install -qq git-restore-mtime > /dev/null 2>&1
+git restore-mtime
 
 COMMIT=$(cd "$SRC_DIR" && git rev-parse HEAD)
 echo "Commit: $COMMIT"
