@@ -74,6 +74,7 @@ echo "gn gen done."
 # Compile
 echo "Building with autoninja + siso..."
 autoninja -C out/Default chrome_public_apk
+ls -la out/Default/ | head -50
 
 mkdir -p out/tmp out/release
 mv out/Default/apks/ChromePublic.apk "out/tmp/$VERSION-arm64-v8a.apk"
