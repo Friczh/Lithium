@@ -1,5 +1,6 @@
 #!/bin/bash
 set -euo pipefail
+MODE="${1:---all}"
 
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 LOG_DIR="$SCRIPT_DIR/logs"
@@ -15,6 +16,7 @@ mkdir -p "$LOG_DIR"
 exec > >(tee -a "$LOG_FILE") 2>&1
 echo "=== Job 2: Compile started: $(date) ==="
 
+if [[ "$MODE" == "--all" || "$MODE" == "--fetch-only" ]]; then
 # Install base deps
 sudo apt-get update -qq
 sudo apt-get install -qq lsb-release file git curl python3 python3-pillow gperf > /dev/null 2>&1
@@ -61,7 +63,9 @@ cd "$CHROMIUM_DIR"
 gclient sync -D --no-history --nohooks
 gclient runhooks
 rm -rf "$SRC_DIR/third_party/angle/third_party/VK-GL-CTS/"
+fi
 
+if [[ "$MODE" == "--all" || "$MODE" == "--build-only" ]]; then
 # Install Chromium build deps (clang, lld etc.) — fresh runner every time
 cd "$SRC_DIR"
 ./build/install-build-deps --no-prompt > /dev/null 2>&1 || true
@@ -81,5 +85,6 @@ ls -la out/Default/ | head -50
 mkdir -p out/tmp out/release
 mv out/Default/apks/ChromePublic.apk "out/tmp/$VERSION-arm64-v8a.apk"
 echo "APK ready at out/tmp/$VERSION-arm64-v8a.apk"
+fi
 
 echo "=== Job 2: Compile finished: $(date) ==="
