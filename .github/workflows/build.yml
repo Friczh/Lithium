@@ -127,6 +127,8 @@ jobs:
             chromium/src/out/Default/obj
             chromium/src/out/Default/gen
             chromium/src/out/Default/*.ninja
+            chromium/src/third_party/llvm-build
+            chromium/src/third_party/android_ndk
          key: siso-${{ env.VERSION }}-${{ github.run_number }}
          restore-keys: |
           siso-${{ env.VERSION }}-
@@ -147,6 +149,8 @@ jobs:
             chromium/src/out/Default/obj
             chromium/src/out/Default/gen
             chromium/src/out/Default/*.ninja
+            chromium/src/third_party/llvm-build
+            chromium/src/third_party/android_ndk
          key: siso-${{ env.VERSION }}-${{ github.run_number }}
 
       - name: Upload APK artifact
