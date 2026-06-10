@@ -9,6 +9,8 @@ VERSION="138.0.7204.157"
 DEPOT_TOOLS="$SCRIPT_DIR/depot_tools"
 CHROMIUM_DIR="$SCRIPT_DIR/chromium"
 SRC_DIR="$CHROMIUM_DIR/src"
+export PATH="$DEPOT_TOOLS:$PATH"
+export DEPOT_TOOLS_METRICS=0
 
 git config --global init.defaultBranch main
 git config --global advice.detachedHead false
@@ -28,9 +30,6 @@ if [ ! -f "$DEPOT_TOOLS/gclient" ]; then
 else
   echo "✅ depot_tools found"
 fi
-export PATH="$DEPOT_TOOLS:$PATH"
-export DEPOT_TOOLS_METRICS=0
-
 
 # Chromium source fetch 
 mkdir -p "$SRC_DIR"
@@ -73,9 +72,12 @@ cd "$SRC_DIR"
 # GN gen
 mkdir -p out/Default
 cp "$SCRIPT_DIR/args.gn" out/Default/args.gn
-
-gn gen out/Default
-echo "gn gen done."
+if [ ! -f out/Default/build.ninja ]; then
+  gn gen out/Default
+  echo "gn gen done."
+else
+  echo "gn gen skipped."
+fi
 
 # Compile
 echo "Building with autoninja + siso..."
