@@ -39,7 +39,6 @@ git remote add origin https://chromium.googlesource.com/chromium/src.git 2>/dev/
 git fetch --depth 1 origin "+refs/tags/$VERSION:refs/tags/$VERSION"
 git -c advice.detachedHead=false checkout "$VERSION"
 sudo apt-get install -qq git-restore-mtime > /dev/null 2>&1
-git restore-mtime > /dev/null 2>&1
 
 COMMIT=$(cd "$SRC_DIR" && git rev-parse HEAD)
 echo "Commit: $COMMIT"
@@ -62,7 +61,7 @@ cd "$CHROMIUM_DIR"
 gclient sync -D --no-history --nohooks
 gclient runhooks
 rm -rf "$SRC_DIR/third_party/angle/third_party/VK-GL-CTS/"
-fi
+git restore-mtime > /dev/null 2>&1
 
 if [[ "$MODE" == "--all" || "$MODE" == "--build-only" ]]; then
 # Install Chromium build deps (clang, lld etc.) — fresh runner every time
