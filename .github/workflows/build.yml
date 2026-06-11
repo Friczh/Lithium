@@ -66,6 +66,18 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      
+      - name: Runner specs
+        run: |
+          echo "=== CPU ==="
+          lscpu | grep -E "Model name|CPU\(s\)|Thread|Core"
+          echo "=== RAM ==="
+          free -h | awk 'NR==1{print} NR==2{printf "Total: %s | Available: %s\n", $2, $7}'
+          echo "=== Storage ==="
+          df -h /
+          echo "=== OS ==="
+          uname -a
+          cat /etc/os-release | grep PRETTY_NAME
 
       - name: Free disk space (safe)
         run: |
@@ -118,10 +130,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Runner specs
+        run: |
+          echo "=== CPU ==="
+          lscpu | grep -E "Model name|CPU\(s\)|Thread|Core"
+          echo "=== RAM ==="
+          free -h | awk 'NR==1{print} NR==2{printf "Total: %s | Available: %s\n", $2, $7}'
+          echo "=== Storage ==="
+          df -h /
+          echo "=== OS ==="
+          uname -a
+          cat /etc/os-release | grep PRETTY_NAME
+
       - name: Free disk space (safe)
         run: |
-          echo "=== Disk before cleanup ==="
-          df -h /
           # Safe to remove — no impact on Chromium build tools
           # NOTE: We keep /usr/local/lib/android
           sudo rm -rf /usr/share/dotnet
