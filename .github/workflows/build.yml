@@ -126,17 +126,7 @@ jobs:
         uses: actions/cache@v4
         with:
          path: |
-            chromium/src/out/Default/.siso_deps
-            chromium/src/out/Default/.siso_state
-            chromium/src/out/Default/.ninja_log
-            chromium/src/out/Default/obj
-            chromium/src/out/Default/gen
-            chromium/src/out/Default/*.ninja
-            chromium/src/third_party/llvm-build
-            chromium/src/third_party/android_ndk
-            chromium/src/out/Default/robolectric_x64
-            chromium/src/out/Default/clang_x64
-            chromium/src/out/Default/clang_x64_v8_arm64
+            chromium/src/out/Default
          key: siso-${{ env.VERSION }}-${{ github.run_number }}
          restore-keys: |
           siso-${{ env.VERSION }}-
@@ -151,17 +141,7 @@ jobs:
         if: always()
         with:
          path: |
-            chromium/src/out/Default/.siso_deps
-            chromium/src/out/Default/.siso_state
-            chromium/src/out/Default/.ninja_log
-            chromium/src/out/Default/obj
-            chromium/src/out/Default/gen
-            chromium/src/out/Default/*.ninja
-            chromium/src/third_party/llvm-build
-            chromium/src/third_party/android_ndk
-            chromium/src/out/Default/robolectric_x64
-            chromium/src/out/Default/clang_x64
-            chromium/src/out/Default/clang_x64_v8_arm64
+            chromium/src/out/Default
          key: siso-${{ env.VERSION }}-${{ github.run_number }}
 
       - name: Upload APK artifact
