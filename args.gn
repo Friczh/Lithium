@@ -6,7 +6,6 @@ target_cpu = "arm64"
 android_sdk_release = "b"
 android_default_version_code = "1"
 chrome_public_manifest_package = "com.friczh.lithium"
-min_sdk_version = 28
 is_official_build = true
 is_debug = false
 symbol_level = 0
