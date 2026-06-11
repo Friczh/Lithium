@@ -171,9 +171,8 @@ jobs:
           ./compile.sh --build-only
 
       - name: Save siso cache
-        if: ${{ !inputs.skip_caching }}
+        if: always() && !inputs.skip_caching
         uses: actions/cache/save@v4
-        if: always()
         with:
          path: |
             chromium/src/out/Default
