@@ -7,6 +7,10 @@ on:
         description: Skip setup?
         type: boolean
         default: false
+      cache_run:
+        description: "Specify cache number (leave empty for latest)"
+        type: number
+        default: 0
 permissions:
   contents: write
 
@@ -127,7 +131,7 @@ jobs:
         with:
          path: |
             chromium/src/out/Default
-         key: siso-${{ env.VERSION }}-${{ github.run_number }}
+         key: siso-${{ env.VERSION }}-${{ inputs.cache_run != 0 && inputs.cache_run || github.run_number }}
          restore-keys: |
           siso-${{ env.VERSION }}-
 
