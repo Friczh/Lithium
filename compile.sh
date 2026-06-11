@@ -61,6 +61,7 @@ cd "$CHROMIUM_DIR"
 gclient sync -D --no-history --nohooks
 gclient runhooks
 rm -rf "$SRC_DIR/third_party/angle/third_party/VK-GL-CTS/"
+fi
 git restore-mtime > /dev/null 2>&1
 
 if [[ "$MODE" == "--all" || "$MODE" == "--build-only" ]]; then
