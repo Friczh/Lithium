@@ -7,10 +7,18 @@ on:
         description: Skip setup?
         type: boolean
         default: false
+      skip_cache:
+        description: Skip cache restore (fresh build)?
+        type: boolean
+        default: false
       cache_run:
-        description: "Specify cache number (leave empty for latest)"
+        description: "Specify cache number (0 = latest)"
         type: number
         default: 0
+      skip_caching:
+        description: Skip caching (Not recommended)?
+        type: boolean
+        default: false
 permissions:
   contents: write
 
@@ -27,7 +35,26 @@ jobs:
       - name: Report
         run: |
           if [ "${{ inputs.skip_setup }}" == "true" ]; then
-            echo "skip_setup=true —  ⚠️Setup skipped - using cached depot_tools"
+            echo "⚠️ Setup skipped - using cached depot_tools"
+          else
+            echo "ℹ️ Setup will be ran in this build"
+          fi
+          if [ "${{ inputs.skip_cache }}" == "true" ]; then
+            echo "ℹ️ Cache skipped - building fresh"
+          else
+            echo "⚠️ Cache will be used in this build"
+          fi
+          if [ "${{ inputs.skip_cache }}" == "true" ]; then
+            echo "⛔ Cache skipped - ignored specifying cache"
+          elif [ "${{ inputs.cache_run }}" == "0" ]; then
+            echo "ℹ️ Latest cache will be used"
+          else
+          echo "ℹ️ Cache #${{ inputs.cache_run }} will be used"
+          fi
+          if [ "${{ inputs.skip_caching }}" == "true" ]; then
+            echo "⚠️ CACHING SKIPPED - NO CACHE WILL BE SAVED IN THIS BUILD!"
+          else
+            echo "ℹ️ Cache will be saved in this build"
           fi
   # Job 1: Sync & Generate
   setup:
@@ -127,6 +154,7 @@ jobs:
           ./compile.sh --fetch-only
 
       - name: Restore siso cache
+        if: ${{ !inputs.skip_cache }}
         uses: actions/cache@v4
         with:
          path: |
@@ -143,6 +171,7 @@ jobs:
           ./compile.sh --build-only
 
       - name: Save siso cache
+        if: ${{ !inputs.skip_caching }}
         uses: actions/cache/save@v4
         if: always()
         with:
