@@ -39,6 +39,7 @@ git remote add origin https://chromium.googlesource.com/chromium/src.git 2>/dev/
 git fetch --depth 1 origin "+refs/tags/$VERSION:refs/tags/$VERSION"
 git -c advice.detachedHead=false checkout "$VERSION"
 sudo apt-get install -qq git-restore-mtime > /dev/null 2>&1
+git restore-mtime > /dev/null 2>&1
 
 COMMIT=$(cd "$SRC_DIR" && git rev-parse HEAD)
 echo "Commit: $COMMIT"
@@ -62,7 +63,6 @@ gclient sync -D --no-history --nohooks
 gclient runhooks
 rm -rf "$SRC_DIR/third_party/angle/third_party/VK-GL-CTS/"
 fi
-git restore-mtime > /dev/null 2>&1
 
 if [[ "$MODE" == "--all" || "$MODE" == "--build-only" ]]; then
 # Install Chromium build deps (clang, lld etc.) — fresh runner every time
@@ -71,8 +71,14 @@ cd "$SRC_DIR"
 
 # GN gen
 mkdir -p out/Default
-cp "$SCRIPT_DIR/args.gn" out/Default/args.gn
-if [ ! -f out/Default/build.ninja ]; then
+if ! cmp -s "$SCRIPT_DIR/args.gn" out/Default/args.gn; then
+  cp "$SCRIPT_DIR/args.gn" out/Default/args.gn
+  echo "args.gn updated."
+else
+  touch -r out/Default/build.ninja out/Default/args.gn 2>/dev/null || true
+  echo "args.gn unchanged, timestamp aligned."
+fi
+ [ ! -f out/Default/build.ninja ]; then
   gn gen out/Default
   echo "gn gen done."
 else
