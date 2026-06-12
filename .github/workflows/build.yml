@@ -24,7 +24,7 @@ permissions:
 
 env:
   VERSION: "138.0.7204.157"
-  WORK_DIR: /opt/lithium-build
+  WORK_DIR: /home/runner/work/Lithium/Lithium
 
 jobs:
 
@@ -81,10 +81,6 @@ jobs:
           echo "=== OS ==="
           uname -a
           cat /etc/os-release | grep PRETTY_NAME
-      - name: Setup work directory
-        run: |
-          sudo mkdir -p ${{ env.WORK_DIR }}
-          sudo chown -R $USER:$USER ${{ env.WORK_DIR }}
 
       - name: Free disk space (safe)
         run: |
@@ -152,10 +148,6 @@ jobs:
           echo "=== OS ==="
           uname -a
           cat /etc/os-release | grep PRETTY_NAME
-      - name: Setup work directory
-        run: |
-          sudo mkdir -p ${{ env.WORK_DIR }}
-          sudo chown -R $USER:$USER ${{ env.WORK_DIR }}
 
       - name: Free disk space (safe)
         run: |
