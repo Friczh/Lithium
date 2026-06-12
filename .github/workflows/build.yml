@@ -24,6 +24,7 @@ permissions:
 
 env:
   VERSION: "138.0.7204.157"
+  WORK_DIR: /opt/lithium-build
 
 jobs:
 
@@ -66,6 +67,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          path: ${{ env.WORK_DIR }}/repo
       
       - name: Runner specs
         run: |
@@ -104,19 +107,21 @@ jobs:
       - name: Cache depot_tools
         uses: actions/cache@v4
         with:
-          path: depot_tools
+          path: ${{ env.WORK_DIR }}/depot_tools
           key: depot_tools-${{ env.VERSION }}
 
       - name: Run setup
         run: |
+          mkdir -p ${{ env.WORK_DIR }}
+          cd ${{ env.WORK_DIR }}/repo
           chmod +x *.sh
-          ./setup.sh
+          WORK_DIR=${{ env.WORK_DIR }} ./setup.sh
           
       - name: Save depot_tools cache
         uses: actions/cache/save@v4
         if: always()
         with:
-          path: depot_tools
+          path: ${{ env.WORK_DIR }}/depot_tools
           key: depot_tools-${{ env.VERSION }}
 
   #  Job 2: Compile 
@@ -129,6 +134,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          path: ${{ env.WORK_DIR }}/repo
 
       - name: Runner specs
         run: |
@@ -167,46 +174,48 @@ jobs:
       - name: Restore depot_tools
         uses: actions/cache@v4
         with:
-          path: depot_tools
+          path: ${{ env.WORK_DIR }}/depot_tools
           key: depot_tools-${{ env.VERSION }}
 
       - name: Run compile with fetch mode
         run: |
+          mkdir -p ${{ env.WORK_DIR }}
+          cd ${{ env.WORK_DIR }}/repo
           chmod +x *.sh
-          ./compile.sh --fetch-only
+          WORK_DIR=${{ env.WORK_DIR }} ./compile.sh --fetch-only
 
       - name: Restore siso cache
         if: ${{ !inputs.skip_cache }}
         uses: actions/cache@v4
         with:
          path: |
-            chromium/src/out/Default
-            chromium/src/third_party/llvm-build
-            chromium/src/third_party/android_ndk
+            ${{ env.WORK_DIR }}/chromium/src/out/Default
+            ${{ env.WORK_DIR }}/chromium/src/third_party/llvm-build
+            ${{ env.WORK_DIR }}/chromium/src/third_party/android_ndk
          key: siso-${{ env.VERSION }}-${{ inputs.cache_run != 0 && inputs.cache_run || github.run_number }}
          restore-keys: |
           siso-${{ env.VERSION }}-
 
       - name: Run compile with build mode
         run: |
-          chmod +x *.sh
-          ./compile.sh --build-only
+          cd ${{ env.WORK_DIR }}/repo
+          WORK_DIR=${{ env.WORK_DIR }} ./compile.sh --build-only
 
       - name: Save siso cache
         if: always() && !inputs.skip_caching
         uses: actions/cache/save@v4
         with:
-         path: |
-            chromium/src/out/Default
-            chromium/src/third_party/llvm-build
-            chromium/src/third_party/android_ndk
+         path: |           
+            ${{ env.WORK_DIR }}/chromium/src/out/Default
+            ${{ env.WORK_DIR }}/chromium/src/third_party/llvm-build
+            ${{ env.WORK_DIR }}/chromium/src/third_party/android_ndk
          key: siso-${{ env.VERSION }}-${{ github.run_number }}
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: unsigned-apk
-          path: chromium/src/out/tmp/*.apk
+          path: ${{ env.WORK_DIR }}/chromium/src/out/tmp/*.apk
           retention-days: 1
 
       - name: Upload siso logs
@@ -215,9 +224,9 @@ jobs:
         with:
          name: siso-logs
          path: |
-          chromium/src/out/Default/siso_output
-          chromium/src/out/Default/siso.INFO
-          chromium/src/out/Default/siso_failed_commands.sh
+            ${{ env.WORK_DIR }}/chromium/src/out/Default/siso_output
+            ${{ env.WORK_DIR }}/chromium/src/out/Default/siso.INFO
+            ${{ env.WORK_DIR }}/chromium/src/out/Default/siso_failed_commands.sh
          retention-days: 1
 
   # Sign & Release 
@@ -229,6 +238,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          path: ${{ env.WORK_DIR }}/repo
 
       - name: Download unsigned APK
         uses: actions/download-artifact@v4
