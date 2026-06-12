@@ -245,7 +245,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: unsigned-apk
-          path: chromium/src/out/tmp
+          path: ${{ env.WORK_DIR }}/chromium/src/out/tmp
 
       - name: Sign & Release
         env:
@@ -253,18 +253,20 @@ jobs:
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
           STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+          WORK_DIR: ${{ env.WORK_DIR }}
         run: |
+          cd ${{ env.WORK_DIR }}/repo
           chmod +x *.sh
-          ./sign.sh
+         ./sign.sh
 
       - name: Upload signed APK
         uses: actions/upload-artifact@v4
         with:
           name: lithium-apks-${{ github.run_number }}
-          path: chromium/src/out/release/*.apk
+          path: ${{ env.WORK_DIR }}/chromium/src/out/release/*.apk
 
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ env.VERSION }}
-          files: chromium/src/out/release/*.apk
+          files: ${{ env.WORK_DIR }}/chromium/src/out/release/*.apk
