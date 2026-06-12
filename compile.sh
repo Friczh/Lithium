@@ -2,12 +2,13 @@
 set -euo pipefail
 MODE="${1:---all}"
 
-SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+WORK_DIR="${WORK_DIR:-.}"
+SCRIPT_DIR="$WORK_DIR/repo"
 LOG_DIR="$SCRIPT_DIR/logs"
 LOG_FILE="$LOG_DIR/compile-$(date +%Y%m%d-%H%M%S).log"
 VERSION="138.0.7204.157"
-DEPOT_TOOLS="$SCRIPT_DIR/depot_tools"
-CHROMIUM_DIR="$SCRIPT_DIR/chromium"
+DEPOT_TOOLS="$WORK_DIR/depot_tools"
+CHROMIUM_DIR="$WORK_DIR/chromium"
 SRC_DIR="$CHROMIUM_DIR/src"
 export PATH="$DEPOT_TOOLS:$PATH"
 export DEPOT_TOOLS_METRICS=0
@@ -39,7 +40,6 @@ git remote add origin https://chromium.googlesource.com/chromium/src.git 2>/dev/
 git fetch --depth 1 origin "+refs/tags/$VERSION:refs/tags/$VERSION"
 git -c advice.detachedHead=false checkout "$VERSION"
 sudo apt-get install -qq git-restore-mtime > /dev/null 2>&1
-git restore-mtime > /dev/null 2>&1
 
 COMMIT=$(cd "$SRC_DIR" && git rev-parse HEAD)
 echo "Commit: $COMMIT"
@@ -63,6 +63,8 @@ gclient sync -D --no-history --nohooks
 gclient runhooks
 rm -rf "$SRC_DIR/third_party/angle/third_party/VK-GL-CTS/"
 fi
+git restore-mtime > /dev/null 2>&1
+
 
 if [[ "$MODE" == "--all" || "$MODE" == "--build-only" ]]; then
 # Install Chromium build deps (clang, lld etc.) — fresh runner every time
@@ -74,9 +76,6 @@ mkdir -p out/Default
 if ! cmp -s "$SCRIPT_DIR/args.gn" out/Default/args.gn; then
   cp "$SCRIPT_DIR/args.gn" out/Default/args.gn
   echo "args.gn updated."
-else
-  touch -r out/Default/build.ninja out/Default/args.gn 2>/dev/null || true
-  echo "args.gn unchanged, timestamp aligned."
 fi
  [ ! -f out/Default/build.ninja ]; then
   gn gen out/Default
