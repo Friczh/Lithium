@@ -12,6 +12,7 @@ CHROMIUM_DIR="$WORK_DIR/chromium"
 SRC_DIR="$CHROMIUM_DIR/src"
 export PATH="$DEPOT_TOOLS:$PATH"
 export DEPOT_TOOLS_METRICS=0
+export GCLIENT_SKIP_SISO_CONFIGURE=1
 
 git config --global init.defaultBranch main
 git config --global advice.detachedHead false
