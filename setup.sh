@@ -1,11 +1,12 @@
 #!/bin/bash
 set -euo pipefail
 
-SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+WORK_DIR="${WORK_DIR:-.}"
+SCRIPT_DIR="$WORK_DIR/repo"
 LOG_DIR="$SCRIPT_DIR/logs"
 LOG_FILE="$LOG_DIR/setup-$(date +%Y%m%d-%H%M%S).log"
 VERSION="138.0.7204.157"
-DEPOT_TOOLS="$SCRIPT_DIR/depot_tools"
+DEPOT_TOOLS="$WORK_DIR/depot_tools"
 GCLIENT_VERSION=""
 
 mkdir -p "$LOG_DIR"
